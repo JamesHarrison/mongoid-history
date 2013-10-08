@@ -9,6 +9,7 @@ describe Mongoid::History do
 
       field           :title
       field           :body
+      field           :views
       field           :rating
 
       embeds_many     :comments, store_as: :coms
@@ -496,14 +497,15 @@ describe Mongoid::History do
     end
 
     describe "embedded with cascading callbacks" do
-      
+
       let(:tag_foo){ post.tags.create(:title => "foo", :updated_by => user) }
       let(:tag_bar){ post.tags.create(:title => "bar") }
-      
+
       before(:each) do
-        Mongoid.instantiate_observers
-        Thread.current[:mongoid_history_sweeper_controller] = Mongoid::History::Sweeper.instance
-        Mongoid::History::Sweeper.instance.stub(:current_user){ user }
+        #Mongoid.instantiate_observers
+        Thread.current[:mongoid_history_current_user] = user
+        #Mongoid::History::Sweeper.instance
+        # Mongoid::History::Sweeper.instance.stub(:current_user){ user }
       end
 
       # it "should have cascaded the creation callbacks and set timestamps" do
@@ -538,7 +540,7 @@ describe Mongoid::History do
       end
 
       it "should save modifier" do
-        Thread.current[:mongoid_history_sweeper_controller].current_user.should eq user
+        Thread.current[:mongoid_history_current_user].should eq user
         tag_foo.history_tracks.last.modifier.should eq user
         tag_bar.history_tracks.last.modifier.should eq user
       end

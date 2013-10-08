@@ -3,9 +3,9 @@ Mongoid.configure do |config|
 end
 
 RSpec.configure do |config|
-  config.before :each do
-    Mongoid.observers = Mongoid::History::Sweeper
-  end
+  # config.before :each do
+  #   Mongoid.observers = Mongoid::History::Sweeper
+  # end
 
   config.after(:each) do
     Mongoid.purge!

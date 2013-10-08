@@ -11,20 +11,27 @@ module Mongoid::History
       field       :modified,                :type => Hash
       field       :original,                :type => Hash
       field       :version,                 :type => Integer
+      field       :message,                 :type => String
       field       :action,                  :type => String
       field       :scope,                   :type => String
       belongs_to  :modifier,                :class_name => Mongoid::History.modifier_class_name
 
-      index(:scope => 1)
-      index(:association_chain => 1)
+      index(:scope => 1, :created_at => -1)
+      index(:association_chain => 1, created_at: -1)
+      index(:scope => 1, :association_chain => 1, created_at: -1)
 
       Mongoid::History.tracker_class_name = self.name.tableize.singularize.to_sym
 
       if defined?(ActionController) and defined?(ActionController::Base)
         ActionController::Base.class_eval do
-          around_filter Mongoid::History::Sweeper.instance
+          before_filter :set_mongoid_history_modifier
+
+          def set_mongoid_history_modifier
+            Thread.current[:mongoid_history_current_user] = send(Mongoid::History.current_user_method)
+          end
         end
       end
+
     end
 
     def undo!(modifier)

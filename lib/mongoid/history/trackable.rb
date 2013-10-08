@@ -29,6 +29,7 @@ module Mongoid::History
           options[:on] = options[:on].map{|field| database_field_name(field)}.compact.uniq
         end
 
+        attr_accessor :history_message
         field options[:version_field].to_sym, :type => Integer
 
         belongs_to_modifier_options = { :class_name => Mongoid::History.modifier_class_name }
@@ -69,7 +70,8 @@ module Mongoid::History
 
     module MyInstanceMethods
       def history_tracks
-        @history_tracks ||= Mongoid::History.tracker_class.where(:scope => history_trackable_options[:scope], :association_chain => association_hash)
+        @history_tracks ||= Mongoid::History.tracker_class.where(:scope => history_trackable_options[:scope], :association_chain => association_hash) #.
+          #.order_by(created_at: -1)
       end
 
       #  undo :from => 1, :to => 5
@@ -238,9 +240,11 @@ module Mongoid::History
 
       def track_history_for_action(action)
         if track_history_for_action?(action)
+          attributes = history_tracker_attributes(action.to_sym)
+          attributes[:modifier] ||= Thread.current[:mongoid_history_current_user]
           current_version = (self.send(history_trackable_options[:version_field]) || 0 ) + 1
           self.send("#{history_trackable_options[:version_field]}=", current_version)
-          Mongoid::History.tracker_class.create!(history_tracker_attributes(action.to_sym).merge(version: current_version, action: action.to_s, trackable: self))
+          Mongoid::History.tracker_class.create!(attributes.merge(version: current_version, message: history_message, action: action.to_s, trackable: self))
         end
         clear_trackable_memoization
       end
