@@ -95,7 +95,7 @@ class Post
                   :version_field => :version,   # adds "field :version, :type => Integer" to track current version, default is :version
                   :track_create   =>  false,    # track document creation, default is false
                   :track_update   =>  true,     # track document updates, default is true
-                  :track_destroy  =>  false,    # track document destruction, default is false
+                  :track_destroy  =>  false     # track document destruction, default is false
 end
 
 class Comment
@@ -304,4 +304,3 @@ Copyright
 Copyright (c) 2011-2012 Aaron Qian. MIT License.
 
 See [LICENSE.txt](https://github.com/aq1018/mongoid-history/blob/master/LICENSE.txt) for further details.
-
